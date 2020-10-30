@@ -44,4 +44,8 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 	}
 
 	// TODO Override methods below as necessary to create a thread-safe indexed set.
+	/* Methods that directly access class data should be overwritten w/ thread-safe version
+	* These methods are:
+	* 
+	*/
 }

@@ -127,7 +127,7 @@ public class SimpleReadWriteLock {
 						Thread.currentThread().interrupt();
 					}
 				}
-
+				
 				assert writers == 0;
 				readers++;
 			}
@@ -136,13 +136,33 @@ public class SimpleReadWriteLock {
 		/**
 		 * Decreases the number of active readers and notifies any waiting threads
 		 * if necessary.
+		 * 
+		 * Note: unlock functions identical to lock; except that it decrements num of readers rather than increments them
 		 *
 		 * @throws IllegalStateException if no readers to unlock
 		 */
 		@Override
 		public void unlock() throws IllegalStateException {
-			// TODO Fill in this method
-			throw new UnsupportedOperationException("Not yet implemented.");
+			// Based on Custom Locks lecture
+			
+			// Wait until no more writer threads
+			while (writers > 0) {
+				try {
+					lock.wait();
+				}
+				catch (InterruptedException ex) {
+					Thread.currentThread().interrupt();
+				}
+			}
+			
+			
+			// Exception handling
+			if (readers == 0) throw new IllegalStateException();
+			
+			// Unlocking - assert that there are no writers, decrement reader count, and notify all other threads if necessary
+			assert writers == 0;
+			readers--;
+			Thread.currentThread().notifyAll();
 		}
 
 	}
@@ -151,8 +171,11 @@ public class SimpleReadWriteLock {
 	 * Used to maintain exclusive write operations.
 	 */
 	private class WriteLock implements SimpleLock {
-
-		// TODO Add member to track which thread holds the write lock
+		
+		/**
+		 * Keeps track of which thread has the write lock at the moment
+		 */
+		private Thread writerThread;
 
 		/**
 		 * Waits until there are no active readers or writers in the system. Then,
@@ -161,8 +184,20 @@ public class SimpleReadWriteLock {
 		 */
 		@Override
 		public void lock() {
-			// TODO Fill in this method
-			throw new UnsupportedOperationException("Not yet implemented.");
+			synchronized (lock) {
+				while (readers + writers > 0) {
+					try {
+						lock.wait();
+					}
+					catch (InterruptedException ex) {
+						Thread.currentThread().interrupt();
+					}
+				}
+				
+				assert readers + writers == 0;
+				writers++;
+				writerThread = Thread.currentThread();
+			}
 		}
 
 		/**
@@ -176,9 +211,18 @@ public class SimpleReadWriteLock {
 		 */
 		@Override
 		public void unlock() throws IllegalStateException, ConcurrentModificationException {
-			// TODO Fill in this method
-			throw new UnsupportedOperationException("Not yet implemented.");
+
+			// Exception handling
+			if (writers == 0) throw new IllegalStateException();
+			else if (!sameThread(writerThread)) throw new ConcurrentModificationException();
+			
+			// Unlocking - decrement writers, reset writerThread, notify all threads if necessary
+			writers--;
+			writerThread = null;
+			Thread.currentThread().notifyAll();
+			
 		}
+		
 	}
 
 	/**
