@@ -1,3 +1,8 @@
+import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
  * A thread-safe version of {@link IndexedSet} using a read/write lock.
  *
@@ -43,9 +48,90 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 		return System.identityHashCode(lock);
 	}
 
-	// TODO Override methods below as necessary to create a thread-safe indexed set.
-	/* Methods that directly access class data should be overwritten w/ thread-safe version
-	* These methods are:
-	* 
-	*/
+	
+	public <I, O> O readOp(Function<I, O> methodRef, I input) {
+	
+		lock.readLock().lock();
+		
+		try {
+			return methodRef.apply(input);
+		}
+		finally {
+			lock.readLock().unlock();
+		}
+		
+	}
+	
+	public<O> O readOp(Supplier<O> methodRef) {
+		
+		lock.readLock().lock();
+		
+		try {
+			return methodRef.get();
+		}
+		finally {
+			lock.readLock().unlock();
+		}
+		
+	}
+	
+	public <I, O> O writeOp(Function<I, O> methodRef, I input) {
+		
+		lock.writeLock().lock();
+		
+		try {
+			return methodRef.apply(input);
+		}
+		finally {
+			lock.writeLock().unlock();
+		}
+	}
+	
+	@Override
+	public boolean add(E element) {
+		return writeOp(super::add, element);
+	}
+	
+	@Override
+	public boolean addAll(Collection<E> elements) {
+		return writeOp(super::addAll, elements);
+	}
+	
+	@Override
+	public boolean addAll(IndexedSet<E> elements) {
+		return writeOp(super::addAll, elements);
+	}
+	
+	@Override
+	public int size() {
+		return readOp(super::size);
+	}
+	
+	@Override
+	public E get(int index) {
+		return readOp(super::get, index);
+	}
+	
+	@Override
+	public IndexedSet<E> unsortedCopy() {
+		
+		return readOp(super::unsortedCopy);
+		
+	}
+	
+	@Override
+	public IndexedSet<E> sortedCopy() {
+		
+		return readOp(super::sortedCopy);
+		
+	}
+	
+	@Override
+	public String toString() {
+		
+		return readOp(super::toString);
+		
+	}
+	
 }
+

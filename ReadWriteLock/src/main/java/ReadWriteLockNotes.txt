@@ -1,0 +1,6 @@
+ReadWriteLock Notes:
+
+1) Lock funcs - readLock & writeLock
+	Work identically, but follow different rules:
+
+		

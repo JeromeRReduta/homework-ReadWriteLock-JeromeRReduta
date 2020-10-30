@@ -1,1 +1,34 @@
 ThreadSafeIndex Notes
+
+1) Prof. Sophie: "In general, should make a class for single-threaded use first, then think about how to make a multi-threaded version.
+
+2) Need to override all methods in IndexedSet that directly access data
+
+	These methods are:
+	
+		1. add(E)
+		2. addAll(Collection)
+		3. addAll(IndexedSet)
+		4. size()
+		5. contains(E)
+		6. get(int)
+		7. unsortedCopy()
+		8. sortedCopy()
+		9. toString()
+
+	Can classify them into read & write ops:
+		Read:
+			4. size()
+			5. contains(E)
+			6. get(int)
+			7. unsortedCopy()
+			8. sortedCopy()
+			9. toString()
+		
+		Write:
+			1. add(E)
+			2. addAll(Collection)
+			3. addAll(IndexedSet)	
+
+
+		

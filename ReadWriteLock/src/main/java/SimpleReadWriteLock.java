@@ -143,28 +143,20 @@ public class SimpleReadWriteLock {
 		 */
 		@Override
 		public void unlock() throws IllegalStateException {
+			
 			// Based on Custom Locks lecture
-			
-			// Wait until no more writer threads
-			while (writers > 0) {
-				try {
-					lock.wait();
-				}
-				catch (InterruptedException ex) {
-					Thread.currentThread().interrupt();
-				}
+			synchronized (lock) {
+				
+				// Exception handling
+				if (readers == 0) throw new IllegalStateException();
+				
+				readers--;
+				lock.notifyAll();
+				
 			}
-			
-			
-			// Exception handling
-			if (readers == 0) throw new IllegalStateException();
-			
-			// Unlocking - assert that there are no writers, decrement reader count, and notify all other threads if necessary
-			assert writers == 0;
-			readers--;
-			Thread.currentThread().notifyAll();
-		}
 
+		}
+		
 	}
 
 	/**
@@ -184,7 +176,9 @@ public class SimpleReadWriteLock {
 		 */
 		@Override
 		public void lock() {
+			
 			synchronized (lock) {
+				
 				while (readers + writers > 0) {
 					try {
 						lock.wait();
@@ -194,10 +188,11 @@ public class SimpleReadWriteLock {
 					}
 				}
 				
-				assert readers + writers == 0;
 				writers++;
 				writerThread = Thread.currentThread();
+				
 			}
+			
 		}
 
 		/**
@@ -212,19 +207,22 @@ public class SimpleReadWriteLock {
 		@Override
 		public void unlock() throws IllegalStateException, ConcurrentModificationException {
 
-			// Exception handling
-			if (writers == 0) throw new IllegalStateException();
-			else if (!sameThread(writerThread)) throw new ConcurrentModificationException();
-			
-			// Unlocking - decrement writers, reset writerThread, notify all threads if necessary
-			writers--;
-			writerThread = null;
-			Thread.currentThread().notifyAll();
+			synchronized (lock) {
+				
+				// Exception handling
+				if (writers == 0) throw new IllegalStateException();
+				else if (!sameThread(writerThread)) throw new ConcurrentModificationException();
+				
+				writers--;
+				writerThread = null;
+				lock.notifyAll();
+				
+			}
 			
 		}
 		
 	}
-
+	
 	/**
 	 * Demonstrates invalid lock/unlock combinations.
 	 *
