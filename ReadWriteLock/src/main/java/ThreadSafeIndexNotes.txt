@@ -30,5 +30,29 @@ ThreadSafeIndex Notes
 			2. addAll(Collection)
 			3. addAll(IndexedSet)	
 
+3) readOp & writeOp:
+
+	Noticed that all read methods look like this:
+		
+		ReadWriteLock.readLock().lock();
+		try {
+			return runFunction();
+		}
+		finally {
+			ReadWriteLock.readLock().unlock();
+		}
+		
+	and all write methods look like this:
+		ReadWriteLock.writeLock().lock();
+		try {
+			return runFunction();
+		}
+		finally {
+			ReadWriteLock.writeLock.unlock();
+		}
+
+	So figured I could turn runFunction() into a method reference so I wouldn't have to write lock() & unlock() for every method
+	It worked!
+
 
 		

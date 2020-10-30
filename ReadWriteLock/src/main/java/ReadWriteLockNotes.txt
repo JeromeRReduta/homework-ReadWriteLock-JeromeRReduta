@@ -1,6 +1,31 @@
 ReadWriteLock Notes:
 
 1) Lock funcs - readLock & writeLock
-	Work identically, but follow different rules:
+	Work identically, but follow different rules
 
+	How they work:
+
+		lock():
 		
+			Wait until no active writers (readLock)/writers and readers (writeLock) 
+			
+			increase # of active readers/writers
+
+			writeLock only: set writerThread to current thread
+
+		unlock():
+			
+
+			Decrease # of active readers (readLock)/writres (writeLock)
+			notifies all waiting threads if necessary
+
+			writeLock only: sets writerThread to null
+
+
+What I Learned (thanks to https://howtodoinjava.com/java/multi-threading/wait-notify-and-notifyall-methods/):
+	Learned from above website general format for how to write notifyAll():
+
+		synchronized(lock):
+			doStuff()
+			lock.notifyAll() // NOT Thread.currentThread().notifyAll()
+

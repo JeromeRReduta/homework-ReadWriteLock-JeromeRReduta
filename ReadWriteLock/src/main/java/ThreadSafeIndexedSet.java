@@ -48,7 +48,14 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 		return System.identityHashCode(lock);
 	}
 
-	
+	/**
+	 * General format for a read operation that takes one input and gives one output
+	 * @param <I> input type
+	 * @param <O> output type
+	 * @param methodRef method to reference
+	 * @param input input
+	 * @return output of referenced method
+	 */
 	public <I, O> O readOp(Function<I, O> methodRef, I input) {
 	
 		lock.readLock().lock();
@@ -62,6 +69,12 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 		
 	}
 	
+	/**
+	 * General format for a read operation that takes no inputs and gives one output
+	 * @param <O> output type
+	 * @param methodRef method to reference
+	 * @return output of referenced method
+	 */
 	public<O> O readOp(Supplier<O> methodRef) {
 		
 		lock.readLock().lock();
@@ -75,6 +88,14 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 		
 	}
 	
+	/**
+	 * General format for a write operation that takes one input and returns one output
+	 * @param <I> input type
+	 * @param <O> output type
+	 * @param methodRef method to reference
+	 * @param input input
+	 * @return the output of whatever method is referenced
+	 */
 	public <I, O> O writeOp(Function<I, O> methodRef, I input) {
 		
 		lock.writeLock().lock();
@@ -85,6 +106,7 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 		finally {
 			lock.writeLock().unlock();
 		}
+		
 	}
 	
 	@Override
@@ -108,30 +130,28 @@ public class ThreadSafeIndexedSet<E> extends IndexedSet<E> {
 	}
 	
 	@Override
+	public boolean contains(E element) {
+		return readOp(super::contains, element);
+	}
+	
+	@Override
 	public E get(int index) {
 		return readOp(super::get, index);
 	}
 	
 	@Override
 	public IndexedSet<E> unsortedCopy() {
-		
 		return readOp(super::unsortedCopy);
-		
 	}
 	
 	@Override
 	public IndexedSet<E> sortedCopy() {
-		
 		return readOp(super::sortedCopy);
-		
 	}
 	
 	@Override
 	public String toString() {
-		
 		return readOp(super::toString);
-		
 	}
 	
 }
-
